@@ -1,76 +1,61 @@
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { SalePage } from "types/sale";
+import { isTemplateExpression } from "typescript";
+import { formatLocalDate } from "utils/format";
+import { BASE_URL } from "utils/request";
+
 const DataTable = () => {
-  return (
-    <div className="table-responsive">
-      <table className="table table-striped table-sm">
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Vendedor</th>
-            <th>Clientes visitados</th>
-            <th>Negócios fechados</th>
-            <th>Valor</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>22/04/2021</td>
-            <td>Barry Allen</td>
-            <td>34</td>
-            <td>25</td>
-            <td>15017.00</td>
-          </tr>
+    const [activePage, setActivePage] = useState(0);
 
-          <tr>
-            <td>22/04/2021</td>
-            <td>Jose Santos</td>
-            <td>34</td>
-            <td>25</td>
-            <td>16017.00</td>
-          </tr>
+    const [page, setPage] = useState<SalePage>({
+        first: true,
+        number: 0,
+        totalElements: 0,
+        totalPages: 0,
+        last: true,
+    });
 
-          <tr>
-            <td>22/04/2021</td>
-            <td>Maria da Silva</td>
-            <td>40</td>
-            <td>20</td>
-            <td>18017.00</td>
-          </tr>
+    useEffect(() => {
+        axios.get(`${BASE_URL}/sales?page=${activePage}&size=20&sort=date,desc`)
+            .then(response => {
+                setPage(response.data);
+            });
+    }, [activePage]);
 
-          <tr>
-            <td>22/04/2021</td>
-            <td>Fernando Cruz</td>
-            <td>38</td>
-            <td>26</td>
-            <td>13017.00</td>
-          </tr>
+    const changePage = (index: number) => {
+        setActivePage(index);
+    }
 
-          <tr>
-            <td>22/04/2021</td>
-            <td>Oliveira Oliveira</td>
-            <td>38</td>
-            <td>28</td>
-            <td>25017.00</td>
-          </tr>
-
-          <tr>
-            <td>22/04/2021</td>
-            <td>Katia Silva</td>
-            <td>30</td>
-            <td>20</td>
-            <td>16049.00</td>
-          </tr>
-
-          <tr>
-            <td>22/04/2021</td>
-            <td>Breno Teto</td>
-            <td>54</td>
-            <td>55</td>
-            <td>35010.00</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  );
-};
+    return (
+        <>
+            <div className="table-responsive">
+                <table className="table table-striped table-sm">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Vendedor</th>
+                            <th>Clientes visitados</th>
+                            <th>Negócios fechados</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {page.content?.map(x => (
+                            <tr key={x.id}>
+                                <td>{formatLocalDate(x.date, 'dd/MM/yyyy')}</td>
+                                <td>{x.seller.name}</td>
+                                <td>{x.visited}</td>
+                                <td>{x.deals}</td>
+                                <td>{x.amount.toFixed(2)}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </>
+    );
+}
 
 export default DataTable;
+
